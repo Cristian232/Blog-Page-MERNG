@@ -1,4 +1,5 @@
 import {connectToDb} from "./utils/connection";
+import {graphqlHTTP} from "express-graphql";
 
 const express = require("express")
 const {config} = require("dotenv")
@@ -6,6 +7,8 @@ const {config} = require("dotenv")
 config();
 
 const app = express();
+
+app.use("/graphql", graphqlHTTP({schema:null, graphiql:true}))
 
 connectToDb().then(()=> {
 app.listen(process.env.PORT , () =>
