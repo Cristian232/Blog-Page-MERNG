@@ -1,5 +1,6 @@
-./server/node_modules/
+
 ./client/mode_modules/
 /server/node_modules
-./server/.env
+
+/server/.env
 
