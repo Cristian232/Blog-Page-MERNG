@@ -1,0 +1,3 @@
+# template replacement for the .env file on .gitignore
+PORT = 5000
+MONGODB_PASSWORD = ...
