@@ -2,14 +2,14 @@ import {
     GraphQLObjectType,
     GraphQLList,
     GraphQLSchema,
-    GraphQLString
+    GraphQLString, GraphQLNonNull
 } from "graphql";
 import {BlogType, CommentType, UserType} from "../schema/schema";
 import User from "../models/User";
 import Blog from "../models/Blog";
 import Comment from "../models/Comment";
 import {Document} from "mongoose";
-import {hashSync} from "bcryptjs";
+import {compareSync, hashSync} from "bcryptjs";
 
 const RootQuery = new GraphQLObjectType({
     name: "RootQuery",
@@ -55,6 +55,33 @@ const mutations = new GraphQLObjectType({
                     return await user.save();
                 } catch (err) {
                     return new Error("User signup failed. Try again!")
+                }
+            }
+        },
+        login: {
+            type: UserType,
+            args: {
+                email: {type: GraphQLNonNull(GraphQLString)},
+                password: {type: GraphQLNonNull(GraphQLString)}
+            },
+            async resolve(parent, {email, password}) {
+                let existingUser : Document <any,any,any>;
+                try {
+                    existingUser = await User.findOne({email});
+                    if (!existingUser){
+                        return new Error("No user found with this email")
+                    }
+                    const decriptedPass = compareSync(
+                        password,
+                        // @ts-ignore
+                        existingUser?.password
+                    );
+                    if (!decriptedPass){
+                        return new Error("Incorrect password");
+                    }
+                    return existingUser;
+                } catch (err) {
+                    return new Error(err)
                 }
             }
         }
