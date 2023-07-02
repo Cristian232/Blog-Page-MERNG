@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CommentType = exports.BlogType = exports.UserType = void 0;
 const graphql_1 = require("graphql");
-const UserType = new graphql_1.GraphQLObjectType({
+exports.UserType = new graphql_1.GraphQLObjectType({
     name: "UserType",
     fields: () => ({
         id: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLID) },
@@ -10,7 +11,7 @@ const UserType = new graphql_1.GraphQLObjectType({
         password: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) }
     })
 });
-const BlogType = new graphql_1.GraphQLObjectType({
+exports.BlogType = new graphql_1.GraphQLObjectType({
     name: "BlogType",
     fields: () => ({
         id: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLID) },
@@ -19,7 +20,7 @@ const BlogType = new graphql_1.GraphQLObjectType({
         date: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) }
     })
 });
-const CommentType = new graphql_1.GraphQLObjectType({
+exports.CommentType = new graphql_1.GraphQLObjectType({
     name: "CommentType",
     fields: () => ({
         id: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLID) },
