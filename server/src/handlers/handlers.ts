@@ -134,6 +134,24 @@ const mutations = new GraphQLObjectType({
                     return new Error(err)
                 }
             }
+        },
+        deleteBlog: {
+            type: BlogType,
+            args: {
+                id: { type: GraphQLNonNull(GraphQLID)}
+            },
+            async resolve(parent, {id}){
+                let deletedBlog: Document<any,any,any>
+                try {
+                    deletedBlog = await Blog.findById(id);
+                    if (!deletedBlog){
+                        return new Error("Blog not found")
+                    }
+                    return await Blog.findByIdAndDelete(id);
+                }catch (e) {
+                    return new Error(e)
+                }
+            }
         }
     }
 })
