@@ -46,12 +46,16 @@ const mutations = new GraphQLObjectType({
                 password: {type: GraphQLString}
             },
             async resolve(parent, {name, email, password}) {
-                let existingUser : Document<any,any,any>;
+                let existingUser: Document<any, any, any>;
                 try {
                     existingUser = await User.findOne({email});
                     if (existingUser) return new Error("User already exists?!")
                     const encriptedPass = hashSync(password)
-                    const user = new User({name, email, password: encriptedPass});
+                    const user = new User({
+                        name,
+                        email,
+                        password: encriptedPass
+                    });
                     return await user.save();
                 } catch (err) {
                     return new Error("User signup failed. Try again!")
@@ -65,10 +69,10 @@ const mutations = new GraphQLObjectType({
                 password: {type: GraphQLNonNull(GraphQLString)}
             },
             async resolve(parent, {email, password}) {
-                let existingUser : Document <any,any,any>;
+                let existingUser: Document<any, any, any>;
                 try {
                     existingUser = await User.findOne({email});
-                    if (!existingUser){
+                    if (!existingUser) {
                         return new Error("No user found with this email")
                     }
                     const decriptedPass = compareSync(
@@ -76,10 +80,27 @@ const mutations = new GraphQLObjectType({
                         // @ts-ignore
                         existingUser?.password
                     );
-                    if (!decriptedPass){
+                    if (!decriptedPass) {
                         return new Error("Incorrect password");
                     }
                     return existingUser;
+                } catch (err) {
+                    return new Error(err)
+                }
+            }
+        },
+        addBlog: {
+            type: BlogType,
+            args: {
+                title: {type: GraphQLNonNull(GraphQLString)},
+                content: {type: GraphQLNonNull(GraphQLString)},
+                date: {type: GraphQLNonNull(GraphQLString)}
+            },
+            async resolve(parent, {title, content, date}){
+                let blog: Document<any,any,any>;
+                try {
+                    blog = new Blog({title, content, date});
+                    return await blog.save();
                 } catch (err) {
                     return new Error(err)
                 }

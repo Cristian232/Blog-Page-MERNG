@@ -49,7 +49,11 @@ const mutations = new graphql_1.GraphQLObjectType({
                     if (existingUser)
                         return new Error("User already exists?!");
                     const encriptedPass = (0, bcryptjs_1.hashSync)(password);
-                    const user = new User_1.default({ name, email, password: encriptedPass });
+                    const user = new User_1.default({
+                        name,
+                        email,
+                        password: encriptedPass
+                    });
                     return await user.save();
                 }
                 catch (err) {
@@ -77,6 +81,24 @@ const mutations = new graphql_1.GraphQLObjectType({
                         return new Error("Incorrect password");
                     }
                     return existingUser;
+                }
+                catch (err) {
+                    return new Error(err);
+                }
+            }
+        },
+        addBlog: {
+            type: schema_1.BlogType,
+            args: {
+                title: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) },
+                content: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) },
+                date: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) }
+            },
+            async resolve(parent, { title, content, date }) {
+                let blog;
+                try {
+                    blog = new Blog_1.default({ title, content, date });
+                    return await blog.save();
                 }
                 catch (err) {
                     return new Error(err);
