@@ -16,10 +16,6 @@ N
 server/src/utils/connection.ts,0\c\0ccb4f3d78007ef94f389ef1609937fc2669deca
 I
 server/src/models/User.ts,e\d\ed8cdac94558ecac8190d662090276ff4feeb921
-I
-server/src/models/Blog.ts,f\f\ff72c9948fca056eb92d354f805c93421d5c9bb1
-K
-server/src/schema/schema.ts,1\9\199a0836e5029282a7c30cdaba746e68b06e7351
 L
 server/src/models/Comment.ts,c\f\cf61c935823bbbe443b0088a3439d6670412305a
 A

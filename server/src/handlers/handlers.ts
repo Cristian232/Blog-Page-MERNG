@@ -2,7 +2,7 @@ import {
     GraphQLObjectType,
     GraphQLList,
     GraphQLSchema,
-    GraphQLString, GraphQLNonNull
+    GraphQLString, GraphQLNonNull, GraphQLID
 } from "graphql";
 import {BlogType, CommentType, UserType} from "../schema/schema";
 import User from "../models/User";
@@ -96,11 +96,40 @@ const mutations = new GraphQLObjectType({
                 content: {type: GraphQLNonNull(GraphQLString)},
                 date: {type: GraphQLNonNull(GraphQLString)}
             },
-            async resolve(parent, {title, content, date}){
-                let blog: Document<any,any,any>;
+            async resolve(parent, {title, content, date}) {
+                let blog: Document<any, any, any>;
                 try {
                     blog = new Blog({title, content, date});
                     return await blog.save();
+                } catch (err) {
+                    return new Error(err)
+                }
+            }
+        },
+        updateBlog: {
+            type: BlogType,
+            args: {
+                id: {type: GraphQLNonNull(GraphQLID)},
+                title: {type: GraphQLNonNull(GraphQLString)},
+                content: {type: GraphQLNonNull(GraphQLString)}
+            },
+            async resolve(parent, {title, content, id}) {
+                let existingBlog: Document<any, any, any>
+                try {
+                    existingBlog = await Blog.findById(id)
+                    if (!existingBlog) {
+                        return new Error("Blog does not exist")
+                    }
+                    return await Blog.findByIdAndUpdate(
+                        id,
+                        {
+                            title,
+                            content
+                        },
+                        {
+                            new: true
+                        }
+                    )
                 } catch (err) {
                     return new Error(err)
                 }

@@ -104,6 +104,32 @@ const mutations = new graphql_1.GraphQLObjectType({
                     return new Error(err);
                 }
             }
+        },
+        updateBlog: {
+            type: schema_1.BlogType,
+            args: {
+                id: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLID) },
+                title: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) },
+                content: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) }
+            },
+            async resolve(parent, { title, content, id }) {
+                let existingBlog;
+                try {
+                    existingBlog = await Blog_1.default.findById(id);
+                    if (!existingBlog) {
+                        return new Error("Blog does not exist");
+                    }
+                    return await Blog_1.default.findByIdAndUpdate(id, {
+                        title,
+                        content
+                    }, {
+                        new: true
+                    });
+                }
+                catch (err) {
+                    return new Error(err);
+                }
+            }
         }
     }
 });
