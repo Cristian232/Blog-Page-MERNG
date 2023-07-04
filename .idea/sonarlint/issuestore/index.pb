@@ -14,9 +14,5 @@ Q
 .gitignore,a\5\a5cc2925ca8258af241be7e5b0381edf30266302
 N
 server/src/utils/connection.ts,0\c\0ccb4f3d78007ef94f389ef1609937fc2669deca
-I
-server/src/models/User.ts,e\d\ed8cdac94558ecac8190d662090276ff4feeb921
-L
-server/src/models/Comment.ts,c\f\cf61c935823bbbe443b0088a3439d6670412305a
 A
 server/src/app.ts,4\8\48f7d92e535f017b042c534a394480e72497bced

@@ -9,6 +9,14 @@ const commentSchema: Schema = new Schema({
     date: {
         type:String,
         required: true
+    },
+    blog: {
+        type: Schema.Types.ObjectId,
+        ref: "Blog"
+    },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: "User"
     }
 })
 

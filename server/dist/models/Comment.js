@@ -9,6 +9,14 @@ const commentSchema = new mongoose_1.Schema({
     date: {
         type: String,
         required: true
+    },
+    blog: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: "Blog"
+    },
+    user: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: "User"
     }
 });
 exports.default = (0, mongoose_1.model)("Comment", commentSchema);
