@@ -212,6 +212,44 @@ const mutations = new graphql_1.GraphQLObjectType({
                     await session.commitTransaction();
                 }
             }
+        },
+        deleteComment: {
+            type: schema_1.CommentType,
+            args: {
+                id: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLID) }
+            },
+            async resolve(parent, { id }) {
+                let deleteComment;
+                const session = await (0, mongoose_1.startSession)();
+                try {
+                    session.startTransaction({ session });
+                    deleteComment = await Comment_1.default.findById(id).populate("user");
+                    if (!deleteComment) {
+                        return new Error("Comment not found");
+                    }
+                    //@ts-ignore
+                    const existingUser = await User_1.default.findById(comment?.user);
+                    if (!existingUser) {
+                        return new Error("User not found");
+                    }
+                    //@ts-ignore
+                    const existingBlog = await Blog_1.default.findById(comment?.blog);
+                    if (!existingBlog) {
+                        return new Error("Blog not found");
+                    }
+                    existingUser.comments.pull(deleteComment);
+                    existingBlog.comments.pull(deleteComment);
+                    await existingUser.save({ session });
+                    await existingBlog.save({ session });
+                    return await Comment_1.default.findByIdAndDelete(id);
+                }
+                catch (err) {
+                    return new Error(err);
+                }
+                finally {
+                    await session.commitTransaction();
+                }
+            }
         }
     }
 });

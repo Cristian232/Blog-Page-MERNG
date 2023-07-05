@@ -206,6 +206,36 @@ const mutations = new GraphQLObjectType({
                     await session.commitTransaction()
                 }
             }
+        },
+        deleteComment: {
+            type: CommentType,
+            args: {
+                id: {type: GraphQLNonNull(GraphQLID)}
+            },
+            async resolve(parent, {id}){
+                let deleteComment : Document<any, any, any>;
+                const session = await startSession();
+                try {
+                    session.startTransaction({ session });
+                    deleteComment = await Comment.findById(id).populate("user");
+                    if (!deleteComment) {return new Error("Comment not found")}
+                    //@ts-ignore
+                    const existingUser = await User.findById(comment?.user)
+                    if (!existingUser) {return new Error("User not found")}
+                    //@ts-ignore
+                    const existingBlog = await Blog.findById(comment?.blog)
+                    if (!existingBlog) {return new Error("Blog not found")}
+                    existingUser.comments.pull(deleteComment);
+                    existingBlog.comments.pull(deleteComment);
+                    await existingUser.save({session})
+                    await existingBlog.save({session})
+                    return await Comment.findByIdAndDelete(id)
+                }catch (err) {
+                    return new Error(err)
+                }finally {
+                    await session.commitTransaction()
+                }
+            }
         }
     }
 })
