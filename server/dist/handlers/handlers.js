@@ -174,6 +174,44 @@ const mutations = new graphql_1.GraphQLObjectType({
                     await session.commitTransaction();
                 }
             }
+        },
+        addCommentToBlog: {
+            type: schema_1.CommentType,
+            args: {
+                user: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLID) },
+                blog: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLID) },
+                text: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) },
+                date: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) }
+            },
+            async resolve(parent, { user, blog, text, date }) {
+                const session = await (0, mongoose_1.startSession)();
+                let comment;
+                try {
+                    session.startTransaction({ session });
+                    const existingUser = await User_1.default.findById(user);
+                    const existingBlog = await Blog_1.default.findById(blog);
+                    if (!existingUser || !existingBlog) {
+                        return new Error("Not found User or Blog");
+                    }
+                    comment = new Comment_1.default({
+                        text,
+                        date,
+                        blog,
+                        user
+                    });
+                    existingUser.comments.push(comment);
+                    existingBlog.comments.push(comment);
+                    await existingBlog.save({ session });
+                    await existingUser.save({ session });
+                    return await comment.save({ session });
+                }
+                catch (err) {
+                    return new Error(err);
+                }
+                finally {
+                    await session.commitTransaction();
+                }
+            }
         }
     }
 });

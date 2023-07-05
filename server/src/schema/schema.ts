@@ -29,7 +29,7 @@ export const BlogType = new GraphQLObjectType({
         content: {type: GraphQLNonNull(GraphQLString)},
         date: {type: GraphQLNonNull(GraphQLString)},
         user: {type: UserType, async resolve(parent) {return await User.findById(parent.user)}},
-        comments: {type: UserType, async resolve(parent) {return await Comment.find({blog: parent.id})}}
+        comments: {type: CommentType, async resolve(parent) {return await Comment.find({blog: parent.id})}}
     })
 })
 
@@ -38,6 +38,7 @@ export const CommentType = new GraphQLObjectType({
     fields: () => ({
         id: {type: GraphQLNonNull(GraphQLID)},
         text: {type: GraphQLNonNull(GraphQLString)},
+        date: {type: GraphQLNonNull(GraphQLString)},
         user: {type: UserType, async resolve(parent) {return await User.findById(parent.user)}},
         blog: {type: BlogType, async resolve(parent) {return await Blog.findById(parent.blog)}},
     })

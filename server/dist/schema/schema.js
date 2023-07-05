@@ -27,7 +27,7 @@ exports.BlogType = new graphql_1.GraphQLObjectType({
         content: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) },
         date: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) },
         user: { type: exports.UserType, async resolve(parent) { return await User_1.default.findById(parent.user); } },
-        comments: { type: exports.UserType, async resolve(parent) { return await Comment_1.default.find({ blog: parent.id }); } }
+        comments: { type: exports.CommentType, async resolve(parent) { return await Comment_1.default.find({ blog: parent.id }); } }
     })
 });
 exports.CommentType = new graphql_1.GraphQLObjectType({
@@ -35,6 +35,7 @@ exports.CommentType = new graphql_1.GraphQLObjectType({
     fields: () => ({
         id: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLID) },
         text: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) },
+        date: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) },
         user: { type: exports.UserType, async resolve(parent) { return await User_1.default.findById(parent.user); } },
         blog: { type: exports.BlogType, async resolve(parent) { return await Blog_1.default.findById(parent.blog); } },
     })
