@@ -151,15 +151,27 @@ const mutations = new graphql_1.GraphQLObjectType({
             },
             async resolve(parent, { id }) {
                 let deletedBlog;
+                const session = await (0, mongoose_1.startSession)();
                 try {
-                    deletedBlog = await Blog_1.default.findById(id);
+                    session.startTransaction({ session });
+                    deletedBlog = await Blog_1.default.findById(id).populate("user");
+                    //@ts-ignore
+                    const existingUser = deletedBlog?.user;
+                    if (!existingUser) {
+                        return new Error("User not found");
+                    }
                     if (!deletedBlog) {
                         return new Error("Blog not found");
                     }
+                    existingUser.blogs.pull(deletedBlog);
+                    await existingUser.save({ session });
                     return await Blog_1.default.findByIdAndDelete(id);
                 }
                 catch (e) {
                     return new Error(e);
+                }
+                finally {
+                    await session.commitTransaction();
                 }
             }
         }
