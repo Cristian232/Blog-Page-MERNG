@@ -8,6 +8,7 @@ const schema_1 = require("../schema/schema");
 const User_1 = __importDefault(require("../models/User"));
 const Blog_1 = __importDefault(require("../models/Blog"));
 const Comment_1 = __importDefault(require("../models/Comment"));
+const mongoose_1 = require("mongoose");
 const bcryptjs_1 = require("bcryptjs");
 const RootQuery = new graphql_1.GraphQLObjectType({
     name: "RootQuery",
@@ -92,16 +93,28 @@ const mutations = new graphql_1.GraphQLObjectType({
             args: {
                 title: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) },
                 content: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) },
-                date: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) }
+                date: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLString) },
+                user: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLID) }
             },
-            async resolve(parent, { title, content, date }) {
+            async resolve(parent, { title, content, date, user }) {
                 let blog;
+                const session = await (0, mongoose_1.startSession)();
                 try {
-                    blog = new Blog_1.default({ title, content, date });
-                    return await blog.save();
+                    session.startTransaction({ session });
+                    blog = new Blog_1.default({ title, content, date, user });
+                    const existingUser = await User_1.default.findById(user);
+                    if (!existingUser) {
+                        return new Error("User not found!");
+                    }
+                    existingUser.blogs.push(blog);
+                    await existingUser.save({ session });
+                    return await blog.save({ session });
                 }
                 catch (err) {
                     return new Error(err);
+                }
+                finally {
+                    await session.commitTransaction();
                 }
             }
         },

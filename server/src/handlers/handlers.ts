@@ -8,7 +8,7 @@ import {BlogType, CommentType, UserType} from "../schema/schema";
 import User from "../models/User";
 import Blog from "../models/Blog";
 import Comment from "../models/Comment";
-import {Document} from "mongoose";
+import {Document, startSession} from "mongoose";
 import {compareSync, hashSync} from "bcryptjs";
 
 const RootQuery = new GraphQLObjectType({
@@ -94,15 +94,24 @@ const mutations = new GraphQLObjectType({
             args: {
                 title: {type: GraphQLNonNull(GraphQLString)},
                 content: {type: GraphQLNonNull(GraphQLString)},
-                date: {type: GraphQLNonNull(GraphQLString)}
+                date: {type: GraphQLNonNull(GraphQLString)},
+                user: {type: GraphQLNonNull(GraphQLID)}
             },
-            async resolve(parent, {title, content, date}) {
+            async resolve(parent, {title, content, date, user}) {
                 let blog: Document<any, any, any>;
+                const session = await startSession();
                 try {
-                    blog = new Blog({title, content, date});
-                    return await blog.save();
+                    session.startTransaction({session})
+                    blog = new Blog({title, content, date, user});
+                    const existingUser = await User.findById(user)
+                    if (!existingUser) {return new Error("User not found!")}
+                    existingUser.blogs.push(blog);
+                    await existingUser.save({session})
+                    return await blog.save({session});
                 } catch (err) {
                     return new Error(err)
+                } finally {
+                    await session.commitTransaction();
                 }
             }
         },
