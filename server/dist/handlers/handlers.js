@@ -10,6 +10,7 @@ const Blog_1 = __importDefault(require("../models/Blog"));
 const Comment_1 = __importDefault(require("../models/Comment"));
 const mongoose_1 = require("mongoose");
 const bcryptjs_1 = require("bcryptjs");
+const mongodb_1 = require("mongodb");
 const RootQuery = new graphql_1.GraphQLObjectType({
     name: "RootQuery",
     fields: {
@@ -147,33 +148,33 @@ const mutations = new graphql_1.GraphQLObjectType({
         deleteBlog: {
             type: schema_1.BlogType,
             args: {
-                id: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLID) }
+                id: { type: (0, graphql_1.GraphQLNonNull)(graphql_1.GraphQLID) },
             },
             async resolve(parent, { id }) {
                 let deletedBlog;
                 const session = await (0, mongoose_1.startSession)();
                 try {
-                    session.startTransaction({ session });
+                    session.startTransaction();
                     deletedBlog = await Blog_1.default.findById(id).populate("user");
-                    //@ts-ignore
-                    const existingUser = deletedBlog?.user;
-                    if (!existingUser) {
-                        return new Error("User not found");
-                    }
                     if (!deletedBlog) {
-                        return new Error("Blog not found");
+                        throw new Error("Blog not found");
+                    }
+                    const existingUser = deletedBlog.user;
+                    if (!existingUser) {
+                        throw new Error("User not found");
                     }
                     existingUser.blogs.pull(deletedBlog);
                     await existingUser.save({ session });
-                    return await Blog_1.default.findByIdAndDelete(id);
+                    const deletedBlogResult = await deletedBlog.deleteOne({ _id: id });
+                    return deletedBlogResult;
                 }
                 catch (e) {
-                    return new Error(e);
+                    throw new Error(e);
                 }
                 finally {
-                    await session.commitTransaction();
+                    await session.endSession();
                 }
-            }
+            },
         },
         addCommentToBlog: {
             type: schema_1.CommentType,
@@ -220,20 +221,21 @@ const mutations = new graphql_1.GraphQLObjectType({
             },
             async resolve(parent, { id }) {
                 let deleteComment;
+                const commentId = new mongodb_1.ObjectId(id);
                 const session = await (0, mongoose_1.startSession)();
                 try {
                     session.startTransaction({ session });
-                    deleteComment = await Comment_1.default.findById(id).populate("user");
+                    deleteComment = await Comment_1.default.findById(commentId);
                     if (!deleteComment) {
                         return new Error("Comment not found");
                     }
                     //@ts-ignore
-                    const existingUser = await User_1.default.findById(comment?.user);
+                    const existingUser = await User_1.default.findById(deleteComment?.user);
                     if (!existingUser) {
                         return new Error("User not found");
                     }
                     //@ts-ignore
-                    const existingBlog = await Blog_1.default.findById(comment?.blog);
+                    const existingBlog = await Blog_1.default.findById(deleteComment?.blog);
                     if (!existingBlog) {
                         return new Error("Blog not found");
                     }
@@ -241,7 +243,7 @@ const mutations = new graphql_1.GraphQLObjectType({
                     existingBlog.comments.pull(deleteComment);
                     await existingUser.save({ session });
                     await existingBlog.save({ session });
-                    return await Comment_1.default.findByIdAndDelete(id);
+                    return await deleteComment.deleteOne(commentId);
                 }
                 catch (err) {
                     return new Error(err);
